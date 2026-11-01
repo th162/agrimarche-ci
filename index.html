@@ -10,26 +10,42 @@
 :root{--vert:#1b5e3a;--vert2:#144a2d;--or:#e0a526;--fond:#f6f7f2;--carte:#fff;--texte:#1d2a22;--gris:#5d6b62;--ligne:#d8ddd3;--rouge:#b3261e}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--fond);color:var(--texte);line-height:1.5}
-header{background:var(--vert);color:#fff;padding:28px 20px 22px;border-bottom:6px solid var(--or)}
-header h1{margin:0;font-size:1.7rem;letter-spacing:-.01em}
-header p{margin:4px 0 0;opacity:.9;font-size:.95rem}
-main{max-width:460px;margin:0 auto;padding:18px 16px 60px}
-.onglets{display:flex;gap:8px;margin-bottom:16px}
-.onglets button{flex:1;padding:12px;border:2px solid var(--vert);background:transparent;color:var(--vert);font-size:1rem;font-weight:600;border-radius:10px}
+header{background:var(--vert);color:#fff;padding:22px 20px 18px;border-bottom:6px solid var(--or)}
+header h1{margin:0;font-size:1.6rem;letter-spacing:-.01em}
+header p{margin:4px 0 0;opacity:.9;font-size:.92rem}
+main{max-width:480px;margin:0 auto;padding:16px 16px 60px}
+.onglets{display:flex;gap:8px;margin-bottom:14px}
+.onglets button{flex:1;padding:11px;border:2px solid var(--vert);background:transparent;color:var(--vert);font-size:1rem;font-weight:600;border-radius:10px}
 .onglets button.actif{background:var(--vert);color:#fff}
-form,.carte{background:var(--carte);border:1px solid var(--ligne);border-radius:12px;padding:18px}
+form,.carte{background:var(--carte);border:1px solid var(--ligne);border-radius:12px;padding:16px}
 label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 4px}
-input,select{width:100%;padding:12px;font-size:1rem;border:1px solid var(--ligne);border-radius:8px;background:#fff;color:var(--texte)}
-input:focus,select:focus,button:focus-visible{outline:3px solid var(--or);outline-offset:1px}
+input,select,textarea{width:100%;padding:12px;font-size:1rem;font-family:inherit;border:1px solid var(--ligne);border-radius:8px;background:#fff;color:var(--texte)}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid var(--or);outline-offset:1px}
 .aide{font-size:.8rem;color:var(--gris);margin:3px 0 0}
+.ligne2{display:flex;gap:10px}.ligne2>div{flex:1}
 .principal{width:100%;margin-top:18px;padding:14px;font-size:1.05rem;font-weight:700;border:0;border-radius:10px;background:var(--vert);color:#fff}
 .principal:disabled{opacity:.6}
-.secondaire{width:100%;margin-top:12px;padding:12px;font-size:1rem;border:2px solid var(--vert);border-radius:10px;background:transparent;color:var(--vert);font-weight:600}
+.secondaire{padding:9px 14px;font-size:.95rem;border:2px solid var(--vert);border-radius:10px;background:transparent;color:var(--vert);font-weight:600}
 #msg{margin:14px 0 0;padding:12px;border-radius:8px;font-size:.92rem;display:none}
 #msg.err{display:block;background:#fdecea;color:var(--rouge)}
 #msg.ok{display:block;background:#e6f4ea;color:var(--vert2)}
 .cache{display:none}
-.badge{display:inline-block;background:var(--or);color:#2b2100;font-weight:700;border-radius:20px;padding:2px 12px;font-size:.85rem}
+.badge{display:inline-block;background:var(--or);color:#2b2100;font-weight:700;border-radius:20px;padding:2px 12px;font-size:.82rem}
+.barre{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.filtres{display:flex;gap:8px;margin-bottom:14px}
+.ann{background:var(--carte);border:1px solid var(--ligne);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.ann .photos{display:flex;gap:4px;overflow-x:auto;background:#e9ece4}
+.ann .photos img{height:190px;width:auto;max-width:none;display:block}
+.ann .corps{padding:14px}
+.ann h3{margin:6px 0 2px;font-size:1.1rem}
+.prix{font-size:1.25rem;font-weight:800;color:var(--vert)}
+.meta{color:var(--gris);font-size:.9rem}
+.contact{display:flex;gap:8px;margin-top:12px}
+.contact a{flex:1;text-align:center;padding:11px;border-radius:10px;font-weight:700;text-decoration:none;font-size:.95rem}
+.wa{background:#25d366;color:#07351a}.tel{background:var(--vert);color:#fff}
+.vide{text-align:center;color:var(--gris);padding:30px 10px}
+#apercu{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+#apercu img{height:70px;border-radius:8px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -45,7 +61,6 @@ input:focus,select:focus,button:focus-visible{outline:3px solid var(--or);outlin
       <button id="t-connexion" class="actif" type="button">Connexion</button>
       <button id="t-inscription" type="button">Inscription</button>
     </div>
-
     <form id="f-connexion">
       <label for="c-email">Email</label>
       <input id="c-email" type="email" autocomplete="email" required>
@@ -53,7 +68,6 @@ input:focus,select:focus,button:focus-visible{outline:3px solid var(--or);outlin
       <input id="c-mdp" type="password" autocomplete="current-password" required>
       <button class="principal" type="submit">Se connecter</button>
     </form>
-
     <form id="f-inscription" class="cache">
       <label for="i-role">Je suis</label>
       <select id="i-role" required>
@@ -80,13 +94,45 @@ input:focus,select:focus,button:focus-visible{outline:3px solid var(--or);outlin
     </form>
   </section>
 
-  <section id="vue-accueil" class="cache">
-    <div class="carte">
-      <h2 id="bienvenue" style="margin-top:0"></h2>
-      <p><span class="badge" id="role-badge"></span> <span id="ville-txt"></span></p>
-      <p>Ton compte fonctionne. Les annonces arrivent à l’étape suivante.</p>
-      <button class="secondaire" id="deconnexion" type="button">Se déconnecter</button>
+  <section id="vue-app" class="cache">
+    <div class="barre">
+      <div><strong id="qui"></strong> <span class="badge" id="role-badge"></span></div>
+      <button class="secondaire" id="deconnexion" type="button">Quitter</button>
     </div>
+    <div class="onglets">
+      <button id="t-liste" class="actif" type="button">Annonces</button>
+      <button id="t-publier" type="button">Publier</button>
+    </div>
+
+    <div id="v-liste">
+      <div class="filtres">
+        <select id="f-cat"><option value="">Toutes les filières</option></select>
+        <input id="f-ville" type="search" placeholder="Ville">
+      </div>
+      <div id="liste"></div>
+    </div>
+
+    <form id="f-annonce" class="cache">
+      <label for="a-cat">Filière</label>
+      <select id="a-cat" required><option value="">Choisir…</option></select>
+      <label for="a-titre">Titre de l’annonce</label>
+      <input id="a-titre" type="text" maxlength="80" placeholder="Ex. : Poulets de chair 2 mois" required>
+      <div class="ligne2">
+        <div><label for="a-prix">Prix (FCFA)</label><input id="a-prix" type="number" inputmode="numeric" min="0" required></div>
+        <div><label for="a-unite">Par</label>
+          <select id="a-unite"><option>unité</option><option>kg</option><option>tête</option><option>litre</option><option>sac</option><option>lot</option></select></div>
+      </div>
+      <label for="a-qte">Quantité disponible</label>
+      <input id="a-qte" type="number" inputmode="numeric" min="1" required>
+      <label for="a-ville">Ville</label>
+      <input id="a-ville" type="text" placeholder="Ex. : Man" required>
+      <label for="a-desc">Description (facultatif)</label>
+      <textarea id="a-desc" rows="3" maxlength="500"></textarea>
+      <label for="a-photos">Photos (3 maximum)</label>
+      <input id="a-photos" type="file" accept="image/*" multiple>
+      <div id="apercu"></div>
+      <button class="principal" type="submit">Publier l’annonce</button>
+    </form>
   </section>
 
   <div id="msg" role="status"></div>
@@ -96,19 +142,28 @@ input:focus,select:focus,button:focus-visible{outline:3px solid var(--or);outlin
 const SUPABASE_URL = "https://mpsilkybsecptoldnnqq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Ajos2QN3FYr6eo0S3E7hAw_i7X6TN6p";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const CATS = {aviculture:"Aviculture",cuniculture:"Cuniculture",pisciculture:"Pisciculture",bovin:"Élevage bovin",porciculture:"Porciculture",heliciculture:"Héliciculture",apiculture:"Apiculture"};
+let moi = null, profil = null;
 
 const $ = id => document.getElementById(id);
-const msg = (texte, type) => { const m = $("msg"); m.textContent = texte; m.className = type || ""; };
+const msg = (t, c) => { const m = $("msg"); m.textContent = t; m.className = c || ""; };
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const traduire = e => {
   const t = (e && e.message || "").toLowerCase();
   if (t.includes("invalid login")) return "Email ou mot de passe incorrect.";
   if (t.includes("already registered")) return "Cet email a déjà un compte. Utilise l’onglet Connexion.";
-  if (t.includes("email not confirmed")) return "Confirme d’abord ton email (lien reçu dans ta boîte mail).";
+  if (t.includes("email not confirmed")) return "Confirme d’abord ton email.";
   if (t.includes("password")) return "Mot de passe trop court (6 caractères minimum).";
   if (t.includes("rate limit")) return "Trop d’essais. Attends quelques minutes.";
   if (t.includes("fetch")) return "Pas de connexion internet. Réessaie.";
   return "Erreur : " + (e && e.message ? e.message : "inconnue");
 };
+
+// Listes de filières
+Object.entries(CATS).forEach(([k, v]) => {
+  $("f-cat").add(new Option(v, k));
+  $("a-cat").add(new Option(v, k));
+});
 
 function onglet(nom){
   const co = nom === "connexion";
@@ -121,7 +176,18 @@ function onglet(nom){
 $("t-connexion").onclick = () => onglet("connexion");
 $("t-inscription").onclick = () => onglet("inscription");
 
-// Crée la fiche profil si elle n'existe pas encore
+function vue(nom){
+  const liste = nom === "liste";
+  $("v-liste").classList.toggle("cache", !liste);
+  $("f-annonce").classList.toggle("cache", liste);
+  $("t-liste").classList.toggle("actif", liste);
+  $("t-publier").classList.toggle("actif", !liste);
+  msg("");
+  if (liste) chargerAnnonces();
+}
+$("t-liste").onclick = () => vue("liste");
+$("t-publier").onclick = () => vue("publier");
+
 async function assurerProfil(user){
   const { data } = await db.from("profils").select("*").eq("id", user.id).maybeSingle();
   if (data) return data;
@@ -135,15 +201,18 @@ async function assurerProfil(user){
   return cree;
 }
 
-async function afficherAccueil(user){
+async function afficherApp(user){
   try{
-    const p = await assurerProfil(user);
-    if (!p) { msg("Profil introuvable. Déconnecte-toi et recrée ton compte.", "err"); }
-    $("bienvenue").textContent = "Bienvenue " + (p ? p.nom : "");
-    $("role-badge").textContent = p ? p.role : "";
-    $("ville-txt").textContent = p && p.ville ? p.ville : "";
+    moi = user;
+    profil = await assurerProfil(user);
+    if (!profil) { msg("Profil introuvable. Déconnecte-toi et recrée ton compte.", "err"); return; }
+    $("qui").textContent = profil.nom;
+    $("role-badge").textContent = profil.role;
+    $("t-publier").classList.toggle("cache", profil.role !== "producteur");
+    $("a-ville").value = profil.ville || "";
     $("vue-auth").classList.add("cache");
-    $("vue-accueil").classList.remove("cache");
+    $("vue-app").classList.remove("cache");
+    vue("liste");
   }catch(e){ msg(traduire(e), "err"); }
 }
 
@@ -152,38 +221,113 @@ $("f-inscription").onsubmit = async ev => {
   const b = ev.submitter; b.disabled = true; msg("");
   const tel = $("i-tel").value.trim();
   const { data, error } = await db.auth.signUp({
-    email: $("i-email").value.trim(),
-    password: $("i-mdp").value,
-    options: { data: {
-      nom: $("i-nom").value.trim(), role: $("i-role").value, ville: $("i-ville").value.trim(),
-      telephone: tel, whatsapp: $("i-wa").value.trim() || tel
-    }}
+    email: $("i-email").value.trim(), password: $("i-mdp").value,
+    options: { data: { nom: $("i-nom").value.trim(), role: $("i-role").value, ville: $("i-ville").value.trim(), telephone: tel, whatsapp: $("i-wa").value.trim() || tel }}
   });
   b.disabled = false;
   if (error) return msg(traduire(error), "err");
-  if (data.session) { msg("Compte créé !", "ok"); afficherAccueil(data.user); }
-  else { msg("Compte créé. Confirme ton email (lien reçu), puis connecte-toi.", "ok"); onglet("connexion"); }
+  if (data.session) afficherApp(data.user);
+  else { msg("Compte créé. Confirme ton email, puis connecte-toi.", "ok"); onglet("connexion"); }
 };
 
 $("f-connexion").onsubmit = async ev => {
   ev.preventDefault();
   const b = ev.submitter; b.disabled = true; msg("");
-  const { data, error } = await db.auth.signInWithPassword({
-    email: $("c-email").value.trim(), password: $("c-mdp").value
-  });
+  const { data, error } = await db.auth.signInWithPassword({ email: $("c-email").value.trim(), password: $("c-mdp").value });
   b.disabled = false;
   if (error) return msg(traduire(error), "err");
-  afficherAccueil(data.user);
+  afficherApp(data.user);
 };
 
 $("deconnexion").onclick = async () => {
-  await db.auth.signOut();
-  $("vue-accueil").classList.add("cache");
+  await db.auth.signOut(); moi = null; profil = null;
+  $("vue-app").classList.add("cache");
   $("vue-auth").classList.remove("cache");
   onglet("connexion");
 };
 
-db.auth.getSession().then(({ data }) => { if (data.session) afficherAccueil(data.session.user); });
+// ---------- Photos ----------
+function compresser(file){
+  return new Promise((ok, ko) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const r = Math.min(1, 1280 / Math.max(img.width, img.height));
+      const w = Math.round(img.width * r), h = Math.round(img.height * r);
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(u);
+      c.toBlob(b => b ? ok(b) : ko(new Error("Photo illisible")), "image/jpeg", 0.75);
+    };
+    img.onerror = () => ko(new Error("Photo illisible"));
+    img.src = u;
+  });
+}
+
+$("a-photos").onchange = () => {
+  const ap = $("apercu"); ap.innerHTML = "";
+  const fs = Array.from($("a-photos").files);
+  if (fs.length > 3) { msg("3 photos maximum. Les 3 premières seront utilisées.", "err"); }
+  fs.slice(0, 3).forEach(f => { const i = document.createElement("img"); i.src = URL.createObjectURL(f); ap.appendChild(i); });
+};
+
+// ---------- Publier ----------
+$("f-annonce").onsubmit = async ev => {
+  ev.preventDefault();
+  const b = ev.submitter; b.disabled = true; msg("Publication en cours…");
+  try{
+    const fichiers = Array.from($("a-photos").files).slice(0, 3);
+    const urls = [];
+    for (let i = 0; i < fichiers.length; i++){
+      const blob = await compresser(fichiers[i]);
+      const chemin = moi.id + "/" + Date.now() + "-" + i + ".jpg";
+      const { error } = await db.storage.from("photos-annonces").upload(chemin, blob, { contentType: "image/jpeg" });
+      if (error) throw error;
+      urls.push(db.storage.from("photos-annonces").getPublicUrl(chemin).data.publicUrl);
+    }
+    const { error } = await db.from("annonces").insert({
+      producteur_id: moi.id, titre: $("a-titre").value.trim(), categorie: $("a-cat").value,
+      description: $("a-desc").value.trim() || null, prix: Number($("a-prix").value),
+      unite: $("a-unite").value, quantite: Number($("a-qte").value),
+      ville: $("a-ville").value.trim(), photos: urls
+    });
+    if (error) throw error;
+    $("f-annonce").reset(); $("apercu").innerHTML = ""; $("a-ville").value = profil.ville || "";
+    vue("liste"); msg("Annonce publiée !", "ok");
+  }catch(e){ msg(traduire(e), "err"); }
+  b.disabled = false;
+};
+
+// ---------- Liste ----------
+const num = s => { const n = (s || "").replace(/\D/g, ""); return n.length === 10 ? "225" + n : n; };
+
+async function chargerAnnonces(){
+  const L = $("liste"); L.innerHTML = '<p class="vide">Chargement…</p>';
+  let q = db.from("annonces").select("*, profils(nom,telephone,whatsapp)").eq("statut", "active").order("created_at", { ascending: false }).limit(50);
+  if ($("f-cat").value) q = q.eq("categorie", $("f-cat").value);
+  const v = $("f-ville").value.trim();
+  if (v) q = q.ilike("ville", "%" + v + "%");
+  const { data, error } = await q;
+  if (error) { L.innerHTML = ""; return msg(traduire(error), "err"); }
+  if (!data.length) { L.innerHTML = '<p class="vide">Aucune annonce pour le moment.</p>'; return; }
+  L.innerHTML = data.map(a => {
+    const p = a.profils || {};
+    const photos = (a.photos || []).map(u => '<img src="' + esc(u) + '" alt="" loading="lazy">').join("");
+    const wa = num(p.whatsapp || p.telephone), tel = num(p.telephone);
+    return '<article class="ann">' + (photos ? '<div class="photos">' + photos + '</div>' : '') +
+      '<div class="corps"><span class="badge">' + esc(CATS[a.categorie] || a.categorie) + '</span>' +
+      '<h3>' + esc(a.titre) + '</h3>' +
+      '<div class="prix">' + Number(a.prix).toLocaleString("fr-FR") + ' FCFA <span class="meta">/ ' + esc(a.unite) + '</span></div>' +
+      '<div class="meta">' + esc(a.quantite) + ' disponible(s) · ' + esc(a.ville) + '</div>' +
+      (a.description ? '<p>' + esc(a.description) + '</p>' : '') +
+      '<div class="meta">Vendeur : ' + esc(p.nom || "") + '</div>' +
+      '<div class="contact">' + (wa ? '<a class="wa" href="https://wa.me/' + wa + '">WhatsApp</a>' : '') +
+      (tel ? '<a class="tel" href="tel:+' + tel + '">Appeler</a>' : '') + '</div></div></article>';
+  }).join("");
+}
+$("f-cat").onchange = chargerAnnonces;
+$("f-ville").oninput = () => { clearTimeout(window._t); window._t = setTimeout(chargerAnnonces, 400); };
+
+db.auth.getSession().then(({ data }) => { if (data.session) afficherApp(data.session.user); });
 </script>
 </body>
   </html>
