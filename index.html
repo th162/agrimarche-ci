@@ -27,6 +27,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid v
 .principal:disabled{opacity:.6}
 .secondaire{padding:9px 14px;font-size:.95rem;border:2px solid var(--vert);border-radius:10px;background:transparent;color:var(--vert);font-weight:600}
 .danger{padding:9px 14px;font-size:.95rem;border:2px solid var(--rouge);border-radius:10px;background:transparent;color:var(--rouge);font-weight:600}
+.signal{display:block;margin:12px auto 0;padding:8px 12px;font-size:.88rem;border:0;background:transparent;color:var(--rouge);font-weight:600;text-decoration:underline}
 #msg{margin:14px 0 0;padding:12px;border-radius:8px;font-size:.92rem;display:none}
 #msg.err{display:block;background:#fdecea;color:var(--rouge)}
 #msg.ok{display:block;background:#e6f4ea;color:var(--vert2)}
@@ -48,6 +49,10 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid v
 .vide{text-align:center;color:var(--gris);padding:30px 10px}
 #apercu{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 #apercu img{height:70px;border-radius:8px}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+#modal.cache{display:none}
+.boite{background:#fff;border-radius:12px;padding:18px;width:100%;max-width:440px;max-height:90vh;overflow:auto}
+.boite h3{margin:0 0 4px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -143,12 +148,32 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid v
   <div id="msg" role="status"></div>
 </main>
 
+<div id="modal" class="cache">
+  <div class="boite">
+    <h3>Signaler cette annonce</h3>
+    <p class="aide" id="s-titre"></p>
+    <label for="s-motif">Motif</label>
+    <select id="s-motif">
+      <option>Arnaque ou faux vendeur</option>
+      <option>Produit inexistant</option>
+      <option>Prix suspect</option>
+      <option>Photos volées</option>
+      <option>Contenu inapproprié</option>
+      <option>Autre</option>
+    </select>
+    <label for="s-details">Détails (facultatif)</label>
+    <textarea id="s-details" rows="3" maxlength="400"></textarea>
+    <button class="principal" id="s-envoyer" type="button">Envoyer le signalement</button>
+    <button class="secondaire" id="s-annuler" type="button" style="width:100%;margin-top:10px">Annuler</button>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = "https://mpsilkybsecptoldnnqq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Ajos2QN3FYr6eo0S3E7hAw_i7X6TN6p";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const CATS = {aviculture:"Aviculture",cuniculture:"Cuniculture",pisciculture:"Pisciculture",bovin:"Élevage bovin",porciculture:"Porciculture",heliciculture:"Héliciculture",apiculture:"Apiculture"};
-let moi = null, profil = null, edition = null, CACHE = {};
+let moi = null, profil = null, edition = null, signalee = null, CACHE = {};
 
 const $ = id => document.getElementById(id);
 const msg = (t, c) => { const m = $("msg"); m.textContent = t; m.className = c || ""; };
@@ -368,8 +393,10 @@ async function chargerAnnonces(){
       '<div class="meta">Vendeur : ' + esc(p.nom || "") + '</div>' +
       '<div class="contact">' + (wa ? '<a class="wa" href="https://wa.me/' + wa + '">WhatsApp</a>' : '') +
       (tel ? '<a class="tel" href="tel:+' + tel + '">Appeler</a>' : '') + '</div>' +
-      (miens ? '<div class="contact"><button class="secondaire" type="button" data-act="edit" data-id="' + esc(a.id) + '">Modifier</button>' +
-        '<button class="danger" type="button" data-act="del" data-id="' + esc(a.id) + '">Supprimer</button></div>' : '') +
+      (miens
+        ? '<div class="contact"><button class="secondaire" type="button" data-act="edit" data-id="' + esc(a.id) + '">Modifier</button>' +
+          '<button class="danger" type="button" data-act="del" data-id="' + esc(a.id) + '">Supprimer</button></div>'
+        : '<button class="signal" type="button" data-act="rep" data-id="' + esc(a.id) + '">Signaler cette annonce</button>') +
       '</div></article>';
   }).join("");
 }
@@ -378,6 +405,13 @@ $("liste").onclick = async ev => {
   const b = ev.target.closest("button[data-act]"); if (!b) return;
   const a = CACHE[b.dataset.id]; if (!a) return;
   if (b.dataset.act === "edit") return ouvrirEdition(a);
+  if (b.dataset.act === "rep") {
+    signalee = a;
+    $("s-titre").textContent = a.titre;
+    $("s-details").value = "";
+    $("modal").classList.remove("cache");
+    return;
+  }
   if (!confirm("Supprimer définitivement cette annonce ?")) return;
   b.disabled = true;
   const { data, error } = await db.from("annonces").delete().eq("id", a.id).select();
@@ -386,10 +420,25 @@ $("liste").onclick = async ev => {
   chargerAnnonces(); msg("Annonce supprimée.", "ok");
 };
 
+// ---------- Signalement ----------
+$("s-annuler").onclick = () => { $("modal").classList.add("cache"); signalee = null; };
+$("s-envoyer").onclick = async () => {
+  if (!signalee || !moi) return;
+  const b = $("s-envoyer"); b.disabled = true;
+  const { error } = await db.from("signalements").insert({
+    annonce_id: signalee.id, auteur_id: moi.id,
+    motif: $("s-motif").value, details: $("s-details").value.trim() || null
+  });
+  b.disabled = false;
+  $("modal").classList.add("cache"); signalee = null;
+  if (error) return msg(traduire(error), "err");
+  msg("Merci, ton signalement a été envoyé.", "ok");
+};
+
 $("f-cat").onchange = chargerAnnonces;
 $("f-ville").oninput = () => { clearTimeout(window._t); window._t = setTimeout(chargerAnnonces, 400); };
 
 db.auth.getSession().then(({ data }) => { if (data.session) afficherApp(data.session.user); });
 </script>
 </body>
-  </html>
+        </html>
