@@ -120,10 +120,10 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid v
       <div class="ligne2">
         <div><label for="a-prix">Prix (FCFA)</label><input id="a-prix" type="number" inputmode="numeric" min="0" required></div>
         <div><label for="a-unite">Par</label>
-          <select id="a-unite"><option>unité</option><option>kg</option><option>tête</option><option>litre</option><option>sac</option><option>lot</option></select></div>
+          <select id="a-unite"><option>unité</option><option>kg</option><option>tonne</option><option>tête</option><option>litre</option><option>sac</option><option>lot</option></select></div>
       </div>
       <label for="a-qte">Quantité disponible</label>
-      <input id="a-qte" type="number" inputmode="numeric" min="1" required>
+      <input id="a-qte" type="text" maxlength="40" placeholder="Ex. : 2 tonnes, 50 sacs, 300 poulets" required>
       <label for="a-ville">Ville</label>
       <input id="a-ville" type="text" placeholder="Ex. : Man" required>
       <label for="a-desc">Description (facultatif)</label>
@@ -287,7 +287,7 @@ $("f-annonce").onsubmit = async ev => {
     const { error } = await db.from("annonces").insert({
       producteur_id: moi.id, titre: $("a-titre").value.trim(), categorie: $("a-cat").value,
       description: $("a-desc").value.trim() || null, prix: Number($("a-prix").value),
-      unite: $("a-unite").value, quantite: Number($("a-qte").value),
+      unite: $("a-unite").value, quantite: $("a-qte").value.trim(),
       ville: $("a-ville").value.trim(), photos: urls
     });
     if (error) throw error;
@@ -317,7 +317,7 @@ async function chargerAnnonces(){
       '<div class="corps"><span class="badge">' + esc(CATS[a.categorie] || a.categorie) + '</span>' +
       '<h3>' + esc(a.titre) + '</h3>' +
       '<div class="prix">' + Number(a.prix).toLocaleString("fr-FR") + ' FCFA <span class="meta">/ ' + esc(a.unite) + '</span></div>' +
-      '<div class="meta">' + esc(a.quantite) + ' disponible(s) · ' + esc(a.ville) + '</div>' +
+      '<div class="meta">Quantité : ' + esc(a.quantite) + ' · ' + esc(a.ville) + '</div>' +
       (a.description ? '<p>' + esc(a.description) + '</p>' : '') +
       '<div class="meta">Vendeur : ' + esc(p.nom || "") + '</div>' +
       '<div class="contact">' + (wa ? '<a class="wa" href="https://wa.me/' + wa + '">WhatsApp</a>' : '') +
@@ -330,4 +330,4 @@ $("f-ville").oninput = () => { clearTimeout(window._t); window._t = setTimeout(c
 db.auth.getSession().then(({ data }) => { if (data.session) afficherApp(data.session.user); });
 </script>
 </body>
-  </html>
+                                   </html>
