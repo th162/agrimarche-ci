@@ -26,6 +26,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid v
 .principal{width:100%;margin-top:18px;padding:14px;font-size:1.05rem;font-weight:700;border:0;border-radius:10px;background:var(--vert);color:#fff}
 .principal:disabled{opacity:.6}
 .secondaire{padding:9px 14px;font-size:.95rem;border:2px solid var(--vert);border-radius:10px;background:transparent;color:var(--vert);font-weight:600}
+.danger{padding:9px 14px;font-size:.95rem;border:2px solid var(--rouge);border-radius:10px;background:transparent;color:var(--rouge);font-weight:600}
 #msg{margin:14px 0 0;padding:12px;border-radius:8px;font-size:.92rem;display:none}
 #msg.err{display:block;background:#fdecea;color:var(--rouge)}
 #msg.ok{display:block;background:#e6f4ea;color:var(--vert2)}
@@ -42,6 +43,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid v
 .meta{color:var(--gris);font-size:.9rem}
 .contact{display:flex;gap:8px;margin-top:12px}
 .contact a{flex:1;text-align:center;padding:11px;border-radius:10px;font-weight:700;text-decoration:none;font-size:.95rem}
+.contact button{flex:1}
 .wa{background:#25d366;color:#07351a}.tel{background:var(--vert);color:#fff}
 .vide{text-align:center;color:var(--gris);padding:30px 10px}
 #apercu{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
@@ -113,6 +115,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid v
     </div>
 
     <form id="f-annonce" class="cache">
+      <h2 id="titre-form" style="margin:0">Publier une annonce</h2>
       <label for="a-cat">Filière</label>
       <select id="a-cat" required><option value="">Choisir…</option></select>
       <label for="a-titre">Titre de l’annonce</label>
@@ -130,8 +133,10 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid v
       <textarea id="a-desc" rows="3" maxlength="500"></textarea>
       <label for="a-photos">Photos (3 maximum)</label>
       <input id="a-photos" type="file" accept="image/*" multiple>
+      <p class="aide cache" id="aide-photos">Laisse vide pour garder les photos actuelles.</p>
       <div id="apercu"></div>
-      <button class="principal" type="submit">Publier l’annonce</button>
+      <button class="principal" id="btn-valider" type="submit">Publier l’annonce</button>
+      <button class="secondaire cache" id="btn-annuler" type="button" style="width:100%;margin-top:10px">Annuler</button>
     </form>
   </section>
 
@@ -143,7 +148,7 @@ const SUPABASE_URL = "https://mpsilkybsecptoldnnqq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Ajos2QN3FYr6eo0S3E7hAw_i7X6TN6p";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const CATS = {aviculture:"Aviculture",cuniculture:"Cuniculture",pisciculture:"Pisciculture",bovin:"Élevage bovin",porciculture:"Porciculture",heliciculture:"Héliciculture",apiculture:"Apiculture"};
-let moi = null, profil = null;
+let moi = null, profil = null, edition = null, CACHE = {};
 
 const $ = id => document.getElementById(id);
 const msg = (t, c) => { const m = $("msg"); m.textContent = t; m.className = c || ""; };
@@ -159,7 +164,6 @@ const traduire = e => {
   return "Erreur : " + (e && e.message ? e.message : "inconnue");
 };
 
-// Listes de filières
 Object.entries(CATS).forEach(([k, v]) => {
   $("f-cat").add(new Option(v, k));
   $("a-cat").add(new Option(v, k));
@@ -185,8 +189,9 @@ function vue(nom){
   msg("");
   if (liste) chargerAnnonces();
 }
-$("t-liste").onclick = () => vue("liste");
-$("t-publier").onclick = () => vue("publier");
+$("t-liste").onclick = () => { finEdition(); vue("liste"); };
+$("t-publier").onclick = () => { finEdition(); vue("publier"); };
+$("btn-annuler").onclick = () => { finEdition(); vue("liste"); };
 
 async function assurerProfil(user){
   const { data } = await db.from("profils").select("*").eq("id", user.id).maybeSingle();
@@ -240,7 +245,7 @@ $("f-connexion").onsubmit = async ev => {
 };
 
 $("deconnexion").onclick = async () => {
-  await db.auth.signOut(); moi = null; profil = null;
+  await db.auth.signOut(); moi = null; profil = null; finEdition();
   $("vue-app").classList.add("cache");
   $("vue-auth").classList.remove("cache");
   onglet("connexion");
@@ -263,6 +268,11 @@ function compresser(file){
   });
 }
 
+async function supprimerPhotos(urls){
+  const ch = (urls || []).map(u => decodeURIComponent((u.split("/photos-annonces/")[1] || "").split("?")[0])).filter(Boolean);
+  if (ch.length) await db.storage.from("photos-annonces").remove(ch);
+}
+
 $("a-photos").onchange = () => {
   const ap = $("apercu"); ap.innerHTML = "";
   const fs = Array.from($("a-photos").files);
@@ -270,10 +280,35 @@ $("a-photos").onchange = () => {
   fs.slice(0, 3).forEach(f => { const i = document.createElement("img"); i.src = URL.createObjectURL(f); ap.appendChild(i); });
 };
 
-// ---------- Publier ----------
+// ---------- Modifier ----------
+function finEdition(){
+  edition = null;
+  $("f-annonce").reset(); $("apercu").innerHTML = "";
+  $("a-ville").value = (profil && profil.ville) || "";
+  $("titre-form").textContent = "Publier une annonce";
+  $("btn-valider").textContent = "Publier l’annonce";
+  $("btn-annuler").classList.add("cache");
+  $("aide-photos").classList.add("cache");
+}
+
+function ouvrirEdition(a){
+  edition = a;
+  $("a-cat").value = a.categorie; $("a-titre").value = a.titre; $("a-prix").value = a.prix;
+  $("a-unite").value = a.unite; $("a-qte").value = a.quantite; $("a-ville").value = a.ville;
+  $("a-desc").value = a.description || "";
+  $("a-photos").value = ""; $("apercu").innerHTML = "";
+  $("titre-form").textContent = "Modifier l’annonce";
+  $("btn-valider").textContent = "Enregistrer les changements";
+  $("btn-annuler").classList.remove("cache");
+  $("aide-photos").classList.remove("cache");
+  vue("publier");
+  window.scrollTo(0, 0);
+}
+
+// ---------- Publier / enregistrer ----------
 $("f-annonce").onsubmit = async ev => {
   ev.preventDefault();
-  const b = ev.submitter; b.disabled = true; msg("Publication en cours…");
+  const b = $("btn-valider"); b.disabled = true; msg("Enregistrement en cours…");
   try{
     const fichiers = Array.from($("a-photos").files).slice(0, 3);
     const urls = [];
@@ -284,15 +319,24 @@ $("f-annonce").onsubmit = async ev => {
       if (error) throw error;
       urls.push(db.storage.from("photos-annonces").getPublicUrl(chemin).data.publicUrl);
     }
-    const { error } = await db.from("annonces").insert({
-      producteur_id: moi.id, titre: $("a-titre").value.trim(), categorie: $("a-cat").value,
+    const champs = {
+      titre: $("a-titre").value.trim(), categorie: $("a-cat").value,
       description: $("a-desc").value.trim() || null, prix: Number($("a-prix").value),
-      unite: $("a-unite").value, quantite: $("a-qte").value.trim(),
-      ville: $("a-ville").value.trim(), photos: urls
-    });
-    if (error) throw error;
-    $("f-annonce").reset(); $("apercu").innerHTML = ""; $("a-ville").value = profil.ville || "";
-    vue("liste"); msg("Annonce publiée !", "ok");
+      unite: $("a-unite").value, quantite: $("a-qte").value.trim(), ville: $("a-ville").value.trim()
+    };
+    if (edition){
+      if (urls.length) champs.photos = urls;
+      const { data, error } = await db.from("annonces").update(champs).eq("id", edition.id).select();
+      if (error) throw error;
+      if (!data.length) throw new Error("Modification refusée.");
+      if (urls.length) await supprimerPhotos(edition.photos);
+      finEdition(); vue("liste"); msg("Annonce modifiée !", "ok");
+    } else {
+      champs.producteur_id = moi.id; champs.photos = urls;
+      const { error } = await db.from("annonces").insert(champs);
+      if (error) throw error;
+      finEdition(); vue("liste"); msg("Annonce publiée !", "ok");
+    }
   }catch(e){ msg(traduire(e), "err"); }
   b.disabled = false;
 };
@@ -308,11 +352,13 @@ async function chargerAnnonces(){
   if (v) q = q.ilike("ville", "%" + v + "%");
   const { data, error } = await q;
   if (error) { L.innerHTML = ""; return msg(traduire(error), "err"); }
+  CACHE = {}; data.forEach(a => CACHE[a.id] = a);
   if (!data.length) { L.innerHTML = '<p class="vide">Aucune annonce pour le moment.</p>'; return; }
   L.innerHTML = data.map(a => {
     const p = a.profils || {};
     const photos = (a.photos || []).map(u => '<img src="' + esc(u) + '" alt="" loading="lazy">').join("");
     const wa = num(p.whatsapp || p.telephone), tel = num(p.telephone);
+    const miens = moi && a.producteur_id === moi.id;
     return '<article class="ann">' + (photos ? '<div class="photos">' + photos + '</div>' : '') +
       '<div class="corps"><span class="badge">' + esc(CATS[a.categorie] || a.categorie) + '</span>' +
       '<h3>' + esc(a.titre) + '</h3>' +
@@ -321,13 +367,29 @@ async function chargerAnnonces(){
       (a.description ? '<p>' + esc(a.description) + '</p>' : '') +
       '<div class="meta">Vendeur : ' + esc(p.nom || "") + '</div>' +
       '<div class="contact">' + (wa ? '<a class="wa" href="https://wa.me/' + wa + '">WhatsApp</a>' : '') +
-      (tel ? '<a class="tel" href="tel:+' + tel + '">Appeler</a>' : '') + '</div></div></article>';
+      (tel ? '<a class="tel" href="tel:+' + tel + '">Appeler</a>' : '') + '</div>' +
+      (miens ? '<div class="contact"><button class="secondaire" type="button" data-act="edit" data-id="' + esc(a.id) + '">Modifier</button>' +
+        '<button class="danger" type="button" data-act="del" data-id="' + esc(a.id) + '">Supprimer</button></div>' : '') +
+      '</div></article>';
   }).join("");
 }
+
+$("liste").onclick = async ev => {
+  const b = ev.target.closest("button[data-act]"); if (!b) return;
+  const a = CACHE[b.dataset.id]; if (!a) return;
+  if (b.dataset.act === "edit") return ouvrirEdition(a);
+  if (!confirm("Supprimer définitivement cette annonce ?")) return;
+  b.disabled = true;
+  const { data, error } = await db.from("annonces").delete().eq("id", a.id).select();
+  if (error || !data.length) { b.disabled = false; return msg(error ? traduire(error) : "Suppression refusée.", "err"); }
+  await supprimerPhotos(a.photos);
+  chargerAnnonces(); msg("Annonce supprimée.", "ok");
+};
+
 $("f-cat").onchange = chargerAnnonces;
 $("f-ville").oninput = () => { clearTimeout(window._t); window._t = setTimeout(chargerAnnonces, 400); };
 
 db.auth.getSession().then(({ data }) => { if (data.session) afficherApp(data.session.user); });
 </script>
 </body>
-                                   </html>
+  </html>
